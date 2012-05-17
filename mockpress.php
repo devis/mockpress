@@ -12,6 +12,7 @@ require_once('includes/media.php');
 require_once('includes/posts.php');
 require_once('includes/filtering.php');
 require_once('includes/comments.php');
+require_once('includes/http.php');
 
 /**
  * Reset the WordPress test expectations.
@@ -59,6 +60,13 @@ function _reset_wp() {
 		'multisite' => array(
 			'configuration_type' => 'subfolder'
 		),
+		'http_response' => array(),
+		'http_message' => '',
+		'http_header' => '',
+		'http_supports' => '',
+		'response_code' => '',
+		'response_message' => '',
+		'response_body' => ''
 	);
 
 	wp_cache_init();
