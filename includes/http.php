@@ -43,11 +43,7 @@ function &_wp_http_get_object() {
  */
 function wp_remote_request($url, $args = array()) {
   global $wp_test_expectations;
-
-  if( empty( $wp_test_expectations['http_response'] ) )
-    return new WP_Error();
-  else
-    return $wp_test_expectations['http_response'];
+  return $wp_test_expectations['http_response'];
 }
 
 /**
