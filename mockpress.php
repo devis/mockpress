@@ -1335,6 +1335,17 @@ function wp_get_current_user() {
 }
 
 /**
+ * Set the current_user global variable.
+ * The user must have already been inserted by wp_insert_user and set via wp_set_current_user.
+ * @return WP_User|null The requested WP_User or null if not found.
+ */
+function get_currentuserinfo() {
+	global $wp_test_expectations, $current_user;
+
+	$current_user = wp_get_current_user();
+}
+
+/**
  * Insert a new user.
  * @param WP_User $userdata The userdata to insert.
  */
