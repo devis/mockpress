@@ -8,26 +8,76 @@
  * @param $query The query to expect.
  * @param $result The posts to return for this query.
  */
-function _set_up_get_posts_response($query, $result) {
-  global $wp_test_expectations;
-  if (!is_string($query)) { $query = serialize($query); }
-  $wp_test_expectations['get_posts'][$query] = $result;
-}
+// function _set_up_get_posts_response($query, $result) {
+  // global $wp_test_expectations;
+  // if (!is_string($query)) { $query = serialize($query); }
+  // $wp_test_expectations['get_posts'][$query] = $result;
+// }
 
 /**
  * Retrieve posts from the WordPress database.
  * @param string $query The query to use against the database.
  * @return array The posts that match the query.
  */
-function get_posts($query) {
-  global $wp_test_expectations;
-  if (!is_string($query)) { $query = serialize($query); }
+// function get_posts($query) {
+  // global $wp_test_expectations;
+  // if (!is_string($query)) { $query = serialize($query); }
 
-  if (isset($wp_test_expectations['get_posts'][$query])) {
-    return $wp_test_expectations['get_posts'][$query];
-  } else {
-    return array();
+  // if (isset($wp_test_expectations['get_posts'][$query])) {
+    // return $wp_test_expectations['get_posts'][$query];
+  // } else {
+    // return array();
+  // }
+// }
+
+//CARTPAUJ ADDED
+/**
+ * Get all post IDs.
+ * @return array All valid post IDs.
+ */
+function get_all_post_ids() {
+	global $wp_test_expectations;
+	return array_keys($wp_test_expectations['posts']);
+}
+
+//CARTPAUJ ADDED
+/**
+ * Get posts from $query.
+ * @param array $query
+ * @return array All valid posts (array of post objects).
+ */
+function get_posts($query) {
+  $ids = get_all_post_ids();
+  $posts = array();
+  $num = 0;
+  $nope = false;
+  
+  if(!empty($ids)) {
+    foreach($ids as $id) {
+      $p = get_post($id);
+      
+      if(!empty($query)) {
+        $total = (isset($query['numberposts']) && $query['numberposts'] > 0)?$query['numberposts']:999999999;
+        foreach($query as $key => $value) {
+          if($key != 'numberposts')
+            if(!isset($p->$key) || $p->$key != $value)
+              $nope = true;
+        }
+        
+        if(!$nope && $num < $total) {
+          $posts[] = $p;
+          $num++;
+        }
+        
+        $nope = false;
+      }
+      else { //If query is empty return all posts
+        $posts[] = $p;
+      }
+    }
   }
+  
+  return $posts;
 }
 
 /**

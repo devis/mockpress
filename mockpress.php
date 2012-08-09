@@ -314,6 +314,11 @@ function wp_insert_category($catarr) {
 			add_category($max_id, (object)_make_cat_compat($catarr));
 			return $max_id;
 		}
+    //CARTPAUJ ADDED - allows pre-defined cat ID's
+    elseif (isset($catarr['cat_ID']) && (int)$catarr['cat_ID'] > 0) {
+      add_category($catarr['cat_ID'], (object)_make_cat_compat($catarr));
+			return $catarr['cat_ID'];
+    }
 	}
 	return 0;
 }
@@ -368,6 +373,19 @@ function get_category($id) {
 			return $wp_test_expectations['categories'][$id];
 		}
 	}
+}
+
+//CARTPAUJ ADDED
+//Doesn't accept any args yet
+function get_categories() {
+  $ids = get_all_category_ids();
+  $categories = array();
+  
+  if(!empty($ids))
+    foreach($ids as $id)
+      $categories[] = get_category($id);
+
+  return $categories;
 }
 
 function wp_delete_category($id) {
