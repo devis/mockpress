@@ -66,7 +66,10 @@ function _reset_wp() {
 		'http_supports' => '',
 		'response_code' => '',
 		'response_message' => '',
-		'response_body' => ''
+		'response_body' => '',
+        'pluggable' => array(
+           'is_user_logged_in' => false
+        )
 	);
 
 	wp_cache_init();
@@ -470,7 +473,37 @@ function get_category_link($category_id) {
 	}
 }
 
+//CARTPAUJ ADDED
+/**
+ * See if category is assigned to given post.
+ * @param int $cat_id The category ID.
+ * @param int $post_id The post's ID.
+ */
+function in_category($cat_id, $post_id)
+{
+  $categories = wp_get_post_categories($post_id);
+  if(in_array($cat_id, $categories))
+    return true;
+  
+  return false;
+}
+
 /** Tags **/
+
+//CARTPAUJ ADDED
+/**
+ * See if category is assigned to given post.
+ * @param int $cat_id The category ID.
+ * @param int $post_id The post's ID.
+ */
+function has_tag($tag_id, $post_id)
+{
+  $tags = wp_get_post_tags($post_id);
+  if(in_array($tag_id, $tags))
+    return true;
+  
+  return false;
+}
 
 /**
  * Get a post's tags.
@@ -1395,6 +1428,12 @@ function get_userdata($id) {
 	}
 }
 
+//CARTPAUJ ADDED
+//Alias of get_userdata
+function get_user_data($id) {
+  return get_userdata($id);
+}
+
 /**
  * Get meta data from a user.
  * If $key is empty(), return all the metadata values in an array.
@@ -1419,6 +1458,26 @@ function get_usermeta($id, $key = '') {
 	} else {
 		return false;
 	}
+}
+
+//CARTPAUJ ADDED
+//Alias of get_usermeta
+function get_user_meta($id, $key = '', $single = true) {
+  return get_usermeta($id, $key);
+}
+
+//CARTPAUJ ADDED
+function get_user_by($by, $value) {
+  if($by == 'id')
+    return get_user_data($value);
+  elseif($by == 'login') {
+    $users = $wp_test_expectations['users'];
+    foreach($users as $u)
+      if($u->user_login == $value)
+        return $u;
+  }
+  
+  return false;
 }
 
 /**
