@@ -109,11 +109,17 @@ function wp_insert_post($array) {
  */
 function wp_update_post($object) {
   global $wp_test_expectations;
+  
   if (is_array($object)) { $object = (object)$object; }
-
+  
+  if(!isset($object->ID) or !is_numeric($object->ID))
+    return 0;
+  
   if (isset($wp_test_expectations['posts'][$object->ID])) {
     $wp_test_expectations['posts'][$object->ID] = $object;
   }
+  
+  return $object->ID;
 }
 
 /**
