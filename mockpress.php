@@ -1468,12 +1468,20 @@ function get_user_meta($id, $key = '', $single = true) {
 
 //CARTPAUJ ADDED
 function get_user_by($by, $value) {
+  global $wp_test_expectations;
+  
   if($by == 'id')
     return get_user_data($value);
   elseif($by == 'login') {
     $users = $wp_test_expectations['users'];
     foreach($users as $u)
       if($u->user_login == $value)
+        return $u;
+  }
+  elseif($by == 'email') {
+    $users = $wp_test_expectations['users'];
+    foreach($users as $u)
+      if($u->user_email == $value)
         return $u;
   }
   
