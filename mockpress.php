@@ -13,6 +13,7 @@ require_once('includes/posts.php');
 require_once('includes/filtering.php');
 require_once('includes/comments.php');
 require_once('includes/http.php');
+require_once('includes/pluggable.php');
 
 /**
  * Reset the WordPress test expectations.

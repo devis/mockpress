@@ -35,13 +35,22 @@ function _reset_wp_mail_messages() {
 }
 
 /** Get the queue of messages sent by wp_mail */
-function _get_wp_mail_messages() {
+function _get_wp_mail_messages($convert_to_array=false) {
   global $wp_test_expectations;
   
-  return $wp_test_expectations['pluggable']['wp_mail_messages'];
+  if( $convert_to_array ) {
+    $messages = array();
+    foreach( $wp_test_expectations['pluggable']['wp_mail_messages'] as $message ) {
+      $messages[] = (array)$message;
+    }
+  }
+  else
+    $messages = $wp_test_expectations['pluggable']['wp_mail_messages'];
+
+  return $messages;
 }
 
-function wp_mail( $to, $subject, $message, $headers, $attachments ) {
+function wp_mail( $to, $subject, $message, $headers, $attachments=false ) {
   global $wp_test_expectations;
   
   $wp_test_expectations['pluggable']['wp_mail_messages'][] = (object)compact( 'to', 'subject', 'message', 'headers', 'attachments' );
