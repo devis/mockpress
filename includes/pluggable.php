@@ -50,7 +50,7 @@ function _get_wp_mail_messages($convert_to_array=false) {
   return $messages;
 }
 
-function wp_mail( $to, $subject, $message, $headers, $attachments=false ) {
+function wp_mail($to, $subject, $message, $headers = '', $attachments = '') {
   global $wp_test_expectations;
   
   $wp_test_expectations['pluggable']['wp_mail_messages'][] = (object)compact( 'to', 'subject', 'message', 'headers', 'attachments' );
