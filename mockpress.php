@@ -68,7 +68,9 @@ function _reset_wp() {
 		'response_message' => '',
 		'response_body' => '',
         'pluggable' => array(
-           'is_user_logged_in' => false
+           'is_user_logged_in' => false,
+           'wp_mail' => true,
+           'wp_mail_messages' => array()
         )
 	);
 
