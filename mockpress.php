@@ -1420,6 +1420,23 @@ function wp_insert_user($userdata) {
 }
 
 /**
+ * Insert a new user.
+ * @param WP_User $userdata The userdata to insert.
+ */
+function wp_update_user($userdata) {
+    global $wp_test_expectations;
+
+	if (!is_object($userdata)) { $userdata = (object)$userdata; }
+	if (isset($userdata->ID) and isset($wp_test_expectations['users'][$userdata->ID])) {
+      $wp_test_expectations['users'][$userdata->ID] = (object)array_merge( (array)$wp_test_expectations['users'][$userdata->ID], (array)$userdata );
+      $id = $userdata->ID;
+	} else
+      $id = wp_insert_user( $userdata );
+    
+    return $id;
+}
+
+/**
  * Get a user's user data.
  * @param int $id The ID to retrieve.
  * @return WP_User|false The found user or false if not found.
