@@ -1413,7 +1413,10 @@ function wp_insert_user($userdata) {
 		$id = max(array_keys($wp_test_expectations['users'])) + 1;
 		$userdata->ID = $id;
 	}
+    
 	$wp_test_expectations['users'][$id] = $userdata;
+    
+    return $id;
 }
 
 /**
@@ -1425,16 +1428,10 @@ function get_userdata($id) {
 	global $wp_test_expectations;
 
 	if (isset($wp_test_expectations['users'][$id])) {
-		return $wp_test_expectations['users'][$id];
+		return new WP_User( $id );
 	} else {
 		return false;
 	}
-}
-
-//CARTPAUJ ADDED
-//Alias of get_userdata
-function get_user_data($id) {
-  return get_userdata($id);
 }
 
 /**
@@ -1444,7 +1441,7 @@ function get_user_data($id) {
  * @param string $key The metadata key to retrieve.
  * @return mixed|boolean False if the user doesn't exist, otherwise the retrieved data.
  */
-function get_usermeta($id, $key = '') {
+function get_user_meta($id, $key = '') {
 	global $wp_test_expectations;
 
 	if (isset($wp_test_expectations['user_meta'][$id])) {
@@ -1464,28 +1461,22 @@ function get_usermeta($id, $key = '') {
 }
 
 //CARTPAUJ ADDED
-//Alias of get_usermeta
-function get_user_meta($id, $key = '', $single = true) {
-  return get_usermeta($id, $key);
-}
-
-//CARTPAUJ ADDED
 function get_user_by($by, $value) {
   global $wp_test_expectations;
   
   if($by == 'id')
-    return get_user_data($value);
+    return get_userdata($value);
   elseif($by == 'login') {
     $users = $wp_test_expectations['users'];
-    foreach($users as $u)
+    foreach($users as $uid => $u)
       if($u->user_login == $value)
-        return $u;
+        return new WP_User( $uid );
   }
   elseif($by == 'email') {
     $users = $wp_test_expectations['users'];
-    foreach($users as $u)
+    foreach($users as $uid => $u)
       if($u->user_email == $value)
-        return $u;
+        return new WP_User( $uid );
   }
   
   return false;
@@ -1499,7 +1490,7 @@ function get_user_by($by, $value) {
  * @return boolean True if successful.
  * @todo Check to see if a blank meta key should be allowed, both here and in WP proper.
  */
-function update_usermeta($id, $key, $value) {
+function update_user_meta($id, $key, $value) {
 	global $wp_test_expectations;
 
 	if (!is_numeric($id)) { return false; }
@@ -1518,7 +1509,7 @@ function update_usermeta($id, $key, $value) {
 	return true;
 }
 
-function delete_usermeta($id, $key) {
+function delete_user_meta($id, $key) {
 	global $wp_test_expectations;
 	if (isset($wp_test_expectations['user_meta'][$id])) {
 		unset($wp_test_expectations['user_meta'][$id][$key]);
@@ -1549,7 +1540,12 @@ function _set_users_of_blog($users) {
 function get_users_of_blog($id = '') {
 	global $wp_test_expectations;
 
-	return array_values($wp_test_expectations['users']);
+    $user_objs = array();
+    
+    foreach( $wp_test_expectations['users'] as $id => $data )
+      $user_objs = new WP_User( $id );
+    
+	return $user_objs;
 }
 
 /**
@@ -1581,8 +1577,49 @@ class WP_Error {}
 /** WP_user class **/
 
 class WP_User {
-	var $data, $ID, $cap_key, $first_name, $last_name;
-	var $caps = array();
+  public $cap_key;
+  public $caps = array();
+  public $data;
+  
+  public function __construct( $id, $name=null, $blog=null ) {
+    global $wp_test_expectations;
+    
+    if( isset( $wp_test_expectations['users'][$id] ) ) {
+      $this->data = (object)$wp_test_expectations['users'][$id];
+      $this->data->ID = $id;
+    }
+    else
+      $this->data = stdClass();
+  }
+  
+  public function __get($name)
+  {
+    $object_vars = array_keys(get_object_vars($this));
+    $rec_array = (array)$this->data;
+    
+    if(in_array($name, $object_vars))
+      return $this->$name;
+    else if(array_key_exists($name, $rec_array))
+        return $this->data->$name;
+    else
+      return null;
+  }
+  
+  public function __set($name, $value)
+  {
+    $object_vars = array_keys(get_object_vars($this));
+    $rec_array = (array)$this->data;
+    
+    if(in_array($name, $object_vars))
+      $this->$name = $value;
+    else if(array_key_exists($name, $rec_array))
+      $this->data->$name = $value;
+  }
+  
+  public function __isset($name)
+  {
+    return isset($this->data->$name);
+  }
 }
 
 /** WP_Widget class **/
