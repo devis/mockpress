@@ -1841,3 +1841,38 @@ function _get_node_value($xml, $xpath) {
 function _wrap_xml($string) {
 	return new SimpleXMLElement("<x>" . $string . "</x>");
 }
+
+function stripslashes_deep($value) {
+        if ( is_array($value) ) {
+                $value = array_map('stripslashes_deep', $value);
+        } elseif ( is_object($value) ) {
+                $vars = get_object_vars( $value );
+                foreach ($vars as $key=>$data) {
+                        $value->{$key} = stripslashes_deep( $data );
+                }
+        } else {
+                $value = stripslashes($value);
+        }
+
+        return $value;
+}
+
+function home_url($args='') {
+  $url = 'http://example.com';
+  if( !empty($args) )
+    return "{$url}?{$args}";
+  else
+    return $url;
+}
+
+function site_url($args='') {
+  return home_url($args);
+}
+
+function admin_url($args='') {
+  $url = 'http://example.com/wp-admin';
+  if( !empty($args) )
+    return "{$url}?{$args}";
+  else
+    return $url;
+}

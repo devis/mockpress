@@ -14,6 +14,11 @@ function &_wp_http_get_object() {
   return new WP_Http();
 }
 
+function _set_http_response($val) {
+  global $wp_test_expectations;
+  $wp_test_expectations['http_response'] = $val;
+}
+
 /**
  * Retrieve the raw response from the HTTP request.
  *
@@ -108,6 +113,11 @@ function wp_remote_retrieve_headers(&$response) {
     return $wp_test_expectations['http_response'];
 }
 
+function _set_http_header($val) {
+  global $wp_test_expectations;
+  $wp_test_expectations['http_header'] = $val;
+}
+
 /**
  * Retrieve a single header by name from the raw response.
  *
@@ -124,6 +134,11 @@ function wp_remote_retrieve_header(&$response, $header) {
     return new WP_Error();
   else
     return $wp_test_expectations['http_header'];
+}
+
+function _set_response_code($val) {
+  global $wp_test_expectations;
+  $wp_test_expectations['response_code'] = $val;
 }
 
 /**
@@ -145,6 +160,11 @@ function wp_remote_retrieve_response_code(&$response) {
     return $wp_test_expectations['response_code'];
 }
 
+function _set_response_message($val) {
+  global $wp_test_expectations;
+  $wp_test_expectations['response_message'] = $val;
+}
+
 /**
  * Retrieve only the response message from the raw response.
  *
@@ -164,6 +184,11 @@ function wp_remote_retrieve_response_message(&$response) {
     return $wp_test_expectations['response_message'];
 }
 
+function _set_response_body($val) {
+  global $wp_test_expectations;
+  $wp_test_expectations['response_body'] = $val;
+}
+
 /**
  * Retrieve only the body from the raw response.
  *
@@ -179,6 +204,11 @@ function wp_remote_retrieve_body(&$response) {
     return new WP_Error();
   else
     return $wp_test_expectations['response_body'];
+}
+
+function _set_http_supports($val) {
+  global $wp_test_expectations;
+  $wp_test_expectations['http_supports'] = $val;
 }
 
 /**
