@@ -1410,7 +1410,12 @@ function wp_insert_user($userdata) {
 	if (isset($userdata->ID)) {
 		$id = $userdata->ID;
 	} else {
-		$id = max(array_keys($wp_test_expectations['users'])) + 1;
+        if (empty($wp_test_expectations['users'])) {
+          $id = 1;
+        } else {
+          $id = max(array_keys($wp_test_expectations['users'])) + 1;
+        }
+        
 		$userdata->ID = $id;
 	}
     
