@@ -552,6 +552,10 @@ function remove_action($name, $callback) {
 
 function add_shortcode($code, $callback) {}
 
+function strip_shortcodes( $content ) {
+    return $content;
+}
+
 /**
  * Attach a callback to a filter hook.
  * @param string $name The hook to attach to.
@@ -1142,6 +1146,12 @@ function the_content($more_link_text = "") {
 	if (strpos($post->post_content, "<!--more") !== false) {
 		echo $more_link_text;
 	}
+}
+
+function get_the_content($more_link_text = null, $stripteaser = false) {
+    global $post;
+
+    return $post->post_content;
 }
 
 /**
