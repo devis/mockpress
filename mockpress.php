@@ -61,6 +61,7 @@ function _reset_wp() {
 			'configuration_type' => 'subfolder'
 		),
 		'wp_redirect' => array(),
+                'shortcodes' => array(),
 	);
 
 	wp_cache_init();
@@ -550,7 +551,14 @@ function remove_action($name, $callback) {
 	unset($wp_test_expectations['actions'][$name]);
 }
 
-function add_shortcode($code, $callback) {}
+function add_shortcode($code, $callback) {
+    global $wp_test_expectations;
+    if (!isset($wp_test_expectations['shortcodes'][$code])) {
+        $wp_test_expectations['shortcodes'][$code] = array();
+    }
+    
+    $wp_test_expectations['shortcodes'][$code][] = $callback;
+}
 
 function strip_shortcodes( $content ) {
     return $content;
