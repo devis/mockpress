@@ -12,6 +12,8 @@ require_once('includes/media.php');
 require_once('includes/posts.php');
 require_once('includes/filtering.php');
 require_once('includes/comments.php');
+require_once('includes/http.php');
+require_once('includes/pluggable.php');
 
 /**
  * Reset the WordPress test expectations.
@@ -61,6 +63,18 @@ function _reset_wp() {
 			'configuration_type' => 'subfolder'
 		),
 		'wp_redirect' => array(),
+		'http_response' => array(),
+		'http_message' => '',
+		'http_header' => '',
+		'http_supports' => '',
+		'response_code' => '',
+		'response_message' => '',
+		'response_body' => '',
+        'pluggable' => array(
+           'is_user_logged_in' => false,
+           'wp_mail' => true,
+           'wp_mail_messages' => array()
+        )
 	);
 
 	wp_cache_init();
@@ -308,6 +322,11 @@ function wp_insert_category($catarr) {
 			add_category($max_id, (object)_make_cat_compat($catarr));
 			return $max_id;
 		}
+    //CARTPAUJ ADDED - allows pre-defined cat ID's
+    elseif (isset($catarr['cat_ID']) && (int)$catarr['cat_ID'] > 0) {
+      add_category($catarr['cat_ID'], (object)_make_cat_compat($catarr));
+			return $catarr['cat_ID'];
+    }
 	}
 	return 0;
 }
@@ -362,6 +381,19 @@ function get_category($id) {
 			return $wp_test_expectations['categories'][$id];
 		}
 	}
+}
+
+//CARTPAUJ ADDED
+//Doesn't accept any args yet
+function get_categories() {
+  $ids = get_all_category_ids();
+  $categories = array();
+
+  if(!empty($ids))
+    foreach($ids as $id)
+      $categories[] = get_category($id);
+
+  return $categories;
 }
 
 function wp_delete_category($id) {
@@ -446,7 +478,37 @@ function get_category_link($category_id) {
 	}
 }
 
+//CARTPAUJ ADDED
+/**
+ * See if category is assigned to given post.
+ * @param int $cat_id The category ID.
+ * @param int $post_id The post's ID.
+ */
+function in_category($cat_id, $post_id)
+{
+  $categories = wp_get_post_categories($post_id);
+  if(in_array($cat_id, $categories))
+    return true;
+
+  return false;
+}
+
 /** Tags **/
+
+//CARTPAUJ ADDED
+/**
+ * See if category is assigned to given post.
+ * @param int $cat_id The category ID.
+ * @param int $post_id The post's ID.
+ */
+function has_tag($tag_id, $post_id)
+{
+  $tags = wp_get_post_tags($post_id);
+  if(in_array($tag_id, $tags))
+    return true;
+
+  return false;
+}
 
 /**
  * Get a post's tags.
@@ -1329,6 +1391,17 @@ function wp_get_current_user() {
 }
 
 /**
+ * Set the current_user global variable.
+ * The user must have already been inserted by wp_insert_user and set via wp_set_current_user.
+ * @return WP_User|null The requested WP_User or null if not found.
+ */
+function get_currentuserinfo() {
+	global $wp_test_expectations, $current_user;
+
+	$current_user = wp_get_current_user();
+}
+
+/**
  * Insert a new user.
  * @param WP_User $userdata The userdata to insert.
  */
@@ -1339,10 +1412,35 @@ function wp_insert_user($userdata) {
 	if (isset($userdata->ID)) {
 		$id = $userdata->ID;
 	} else {
-		$id = max(array_keys($wp_test_expectations['users'])) + 1;
+        if (empty($wp_test_expectations['users'])) {
+          $id = 1;
+        } else {
+          $id = max(array_keys($wp_test_expectations['users'])) + 1;
+        }
+
 		$userdata->ID = $id;
 	}
+
 	$wp_test_expectations['users'][$id] = $userdata;
+
+    return $id;
+}
+
+/**
+ * Insert a new user.
+ * @param WP_User $userdata The userdata to insert.
+ */
+function wp_update_user($userdata) {
+    global $wp_test_expectations;
+
+	if (!is_object($userdata)) { $userdata = (object)$userdata; }
+	if (isset($userdata->ID) and isset($wp_test_expectations['users'][$userdata->ID])) {
+      $wp_test_expectations['users'][$userdata->ID] = (object)array_merge( (array)$wp_test_expectations['users'][$userdata->ID], (array)$userdata );
+      $id = $userdata->ID;
+	} else
+      $id = wp_insert_user( $userdata );
+
+    return $id;
 }
 
 /**
@@ -1354,7 +1452,7 @@ function get_userdata($id) {
 	global $wp_test_expectations;
 
 	if (isset($wp_test_expectations['users'][$id])) {
-		return $wp_test_expectations['users'][$id];
+		return new WP_User( $id );
 	} else {
 		return false;
 	}
@@ -1367,7 +1465,7 @@ function get_userdata($id) {
  * @param string $key The metadata key to retrieve.
  * @return mixed|boolean False if the user doesn't exist, otherwise the retrieved data.
  */
-function get_usermeta($id, $key = '') {
+function get_user_meta($id, $key = '') {
 	global $wp_test_expectations;
 
 	if (isset($wp_test_expectations['user_meta'][$id])) {
@@ -1386,6 +1484,28 @@ function get_usermeta($id, $key = '') {
 	}
 }
 
+//CARTPAUJ ADDED
+function get_user_by($by, $value) {
+  global $wp_test_expectations;
+
+  if($by == 'id')
+    return get_userdata($value);
+  elseif($by == 'login') {
+    $users = $wp_test_expectations['users'];
+    foreach($users as $uid => $u)
+      if($u->user_login == $value)
+        return new WP_User( $uid );
+  }
+  elseif($by == 'email') {
+    $users = $wp_test_expectations['users'];
+    foreach($users as $uid => $u)
+      if($u->user_email == $value)
+        return new WP_User( $uid );
+  }
+
+  return false;
+}
+
 /**
  * Create or update a user's meta data field.
  * @param int $id The ID to manage.
@@ -1394,7 +1514,7 @@ function get_usermeta($id, $key = '') {
  * @return boolean True if successful.
  * @todo Check to see if a blank meta key should be allowed, both here and in WP proper.
  */
-function update_usermeta($id, $key, $value) {
+function update_user_meta($id, $key, $value) {
 	global $wp_test_expectations;
 
 	if (!is_numeric($id)) { return false; }
@@ -1413,7 +1533,7 @@ function update_usermeta($id, $key, $value) {
 	return true;
 }
 
-function delete_usermeta($id, $key) {
+function delete_user_meta($id, $key) {
 	global $wp_test_expectations;
 	if (isset($wp_test_expectations['user_meta'][$id])) {
 		unset($wp_test_expectations['user_meta'][$id][$key]);
@@ -1444,7 +1564,12 @@ function _set_users_of_blog($users) {
 function get_users_of_blog($id = '') {
 	global $wp_test_expectations;
 
-	return array_values($wp_test_expectations['users']);
+    $user_objs = array();
+
+    foreach( $wp_test_expectations['users'] as $id => $data )
+      $user_objs = new WP_User( $id );
+
+	return $user_objs;
 }
 
 /**
@@ -1476,8 +1601,49 @@ class WP_Error {}
 /** WP_user class **/
 
 class WP_User {
-	var $data, $ID, $cap_key, $first_name, $last_name;
-	var $caps = array();
+  public $cap_key;
+  public $caps = array();
+  public $data;
+
+  public function __construct( $id, $name=null, $blog=null ) {
+    global $wp_test_expectations;
+
+    if( isset( $wp_test_expectations['users'][$id] ) ) {
+      $this->data = (object)$wp_test_expectations['users'][$id];
+      $this->data->ID = $id;
+    }
+    else
+      $this->data = stdClass();
+  }
+
+  public function __get($name)
+  {
+    $object_vars = array_keys(get_object_vars($this));
+    $rec_array = (array)$this->data;
+
+    if(in_array($name, $object_vars))
+      return $this->$name;
+    else if(array_key_exists($name, $rec_array))
+        return $this->data->$name;
+    else
+      return null;
+  }
+
+  public function __set($name, $value)
+  {
+    $object_vars = array_keys(get_object_vars($this));
+    $rec_array = (array)$this->data;
+
+    if(in_array($name, $object_vars))
+      $this->$name = $value;
+    else if(array_key_exists($name, $rec_array))
+      $this->data->$name = $value;
+  }
+
+  public function __isset($name)
+  {
+    return isset($this->data->$name);
+  }
 }
 
 /** WP_Widget class **/
@@ -1702,4 +1868,39 @@ function wp_redirect($location, $status = 302) {
 	   'location'  => $location,
 	   'status'    => $status,
 	);
+}
+
+function stripslashes_deep($value) {
+        if ( is_array($value) ) {
+                $value = array_map('stripslashes_deep', $value);
+        } elseif ( is_object($value) ) {
+                $vars = get_object_vars( $value );
+                foreach ($vars as $key=>$data) {
+                        $value->{$key} = stripslashes_deep( $data );
+                }
+        } else {
+                $value = stripslashes($value);
+        }
+
+        return $value;
+}
+
+function home_url($args='') {
+  $url = 'http://example.com';
+  if( !empty($args) )
+    return "{$url}?{$args}";
+  else
+    return $url;
+}
+
+function site_url($args='') {
+  return home_url($args);
+}
+
+function admin_url($args='') {
+  $url = 'http://example.com/wp-admin';
+  if( !empty($args) )
+    return "{$url}?{$args}";
+  else
+    return $url;
 }
