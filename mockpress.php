@@ -75,6 +75,7 @@ function _reset_wp() {
            'wp_mail' => true,
            'wp_mail_messages' => array()
         )
+        'shortcodes' => array(),
 	);
 
 	wp_cache_init();
@@ -612,7 +613,18 @@ function remove_action($name, $callback) {
 	unset($wp_test_expectations['actions'][$name]);
 }
 
-function add_shortcode($code, $callback) {}
+function add_shortcode($code, $callback) {
+    global $wp_test_expectations;
+    if (!isset($wp_test_expectations['shortcodes'][$code])) {
+        $wp_test_expectations['shortcodes'][$code] = array();
+    }
+
+    $wp_test_expectations['shortcodes'][$code][] = $callback;
+}
+
+function strip_shortcodes( $content ) {
+    return $content;
+}
 
 /**
  * Attach a callback to a filter hook.
@@ -1204,6 +1216,12 @@ function the_content($more_link_text = "") {
 	if (strpos($post->post_content, "<!--more") !== false) {
 		echo $more_link_text;
 	}
+}
+
+function get_the_content($more_link_text = null, $stripteaser = false) {
+    global $post;
+
+    return $post->post_content;
 }
 
 /**
