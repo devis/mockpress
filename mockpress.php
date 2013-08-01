@@ -74,7 +74,7 @@ function _reset_wp() {
            'is_user_logged_in' => false,
            'wp_mail' => true,
            'wp_mail_messages' => array()
-        )
+        ),
         'shortcodes' => array(),
 	);
 
