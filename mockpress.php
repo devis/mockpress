@@ -15,6 +15,8 @@ require_once('includes/comments.php');
 require_once('includes/http.php');
 require_once('includes/pluggable.php');
 
+define("WP_CONTENT_DIR", ".");
+
 /**
  * Reset the WordPress test expectations.
  */
@@ -1913,6 +1915,10 @@ function home_url($args='') {
 
 function site_url($args='') {
   return home_url($args);
+}
+
+function content_url($args='') {
+	return home_url($args);
 }
 
 function admin_url($args='') {
