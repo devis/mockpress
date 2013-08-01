@@ -1,6 +1,7 @@
 *.bak
 *~
 package.xml
+build
 .buildpath
 .project
 .settings/
