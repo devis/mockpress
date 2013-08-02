@@ -15,7 +15,7 @@ require_once('includes/comments.php');
 require_once('includes/http.php');
 require_once('includes/pluggable.php');
 
-define("WP_CONTENT_DIR", ".");
+define("WP_CONTENT_DIR", sys_get_temp_dir());
 
 /**
  * Reset the WordPress test expectations.
