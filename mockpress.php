@@ -1917,8 +1917,9 @@ function site_url($args='') {
   return home_url($args);
 }
 
-function content_url($args='') {
-	return home_url($args);
+function content_url() {
+	$url = "http://example.com/wp-content";
+	return $url;
 }
 
 function admin_url($args='') {
