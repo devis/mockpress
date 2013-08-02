@@ -1094,7 +1094,7 @@ function plugins_url($path = '', $plugin = '') {
  * Return the URI to the stylesheet directory.
  */
 function get_stylesheet_directory_uri($path='') {
-	return $path;
+	return $path ?: WP_CONTENT_DIR;
 }
 
 /**
