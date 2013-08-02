@@ -1091,6 +1091,13 @@ function plugins_url($path = '', $plugin = '') {
 }
 
 /**
+ * Return the URI to the stylesheet directory.
+ */
+function get_stylesheet_directory_uri($path='') {
+	return $path;
+}
+
+/**
  * Add a post to the main WP_Query Loop.
  * @param object $post A post to add.
  */
